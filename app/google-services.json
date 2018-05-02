@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "610435056926",
+    "firebase_url": "https://ziraatdokumantarama-31e9a.firebaseio.com",
+    "project_id": "ziraatdokumantarama-31e9a",
+    "storage_bucket": "ziraatdokumantarama-31e9a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:610435056926:android:b0179bd21c5d1c29",
+        "android_client_info": {
+          "package_name": "com.ziraat.dokumantarama"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "610435056926-19uasg05dcvjirnm3cav2jvp1tillukv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuS-2pDQxAAP_obYe_ZmfArnyREUUGaR4"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
