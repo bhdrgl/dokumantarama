@@ -16,15 +16,15 @@ import java.net.Socket;
 
 public class ServerSocketThread extends Thread {
 
-    public static final String TAG = "Connection";
-    public final int SOCKET_PORT = 38300;
-    public final int TIMEOUT = 10 * 1000;
+    private static final String TAG = "Connection";
+    private final int SOCKET_PORT = 38300;
+    private final int TIMEOUT = 10 * 1000;
 
-    ServerSocket server = null;
-    PrintWriter socketOut;
-    OutputStream os;
-    SocketListener listener;
-    BufferedReader in;
+    private ServerSocket server = null;
+    private PrintWriter socketOut;
+    private OutputStream os;
+    private SocketListener listener;
+    private BufferedReader in;
 
 
 
@@ -90,19 +90,19 @@ public class ServerSocketThread extends Thread {
     public void run() {
         super.run();
 
-        Socket client = null;
+        Socket client;
         try {
             server = new ServerSocket(SOCKET_PORT);
             server.setSoTimeout(TIMEOUT);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG,e.getMessage());
         }
         while (true) {
             try {
                 client = server.accept();
                 if (client != null) {
 
-                    Log.d("SocketThreadLog", "Socket Connection Established");
+                    Log.d(TAG, "Socket Connection Established");
                     in = new BufferedReader(new InputStreamReader(client.getInputStream()));
                     String line = null;
                     os = client.getOutputStream();
@@ -116,7 +116,7 @@ public class ServerSocketThread extends Thread {
                         }
                         if (incoming.contains("{EOF}"))
                             if (incoming != null && incoming.length() > 0) {
-                                Log.d("SocketThreadLog", "Socket Data = " + incoming);
+                                Log.d(TAG, "Socket Data = " + incoming);
                                 String[] serverData = incoming.split("\\|");
                                 listener.sendSocketCommand(Integer.valueOf(serverData[0]));
                                 incoming = "";
@@ -125,18 +125,11 @@ public class ServerSocketThread extends Thread {
 
 
                     if (client != null) {
-                        Log.d("SocketThreadLog", "Connection Successful");
+                        Log.d(TAG, "Connection Successful");
                     }
                 }
-
-            } catch (IOException e) {
-                Log.d("SocketThreadLog", "Connection TimeOut");
-                Log.e(TAG, "" + e);
-            } catch (NullPointerException e) {
-                Log.d("SocketThreadLog", "Connection TimeOut");
             } catch (Exception e) {
-                Log.d("SocketThreadLog", "Connection TimeOut");
-                e.printStackTrace();
+                Log.e(TAG,e.getMessage());
             }
         }
 

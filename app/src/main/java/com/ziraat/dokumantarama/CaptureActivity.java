@@ -12,6 +12,7 @@ import android.graphics.PixelFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
+import android.nfc.Tag;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
@@ -34,14 +35,16 @@ import java.util.List;
 
 public class CaptureActivity extends AppCompatActivity implements View.OnClickListener,SocketListener,SurfaceHolder.Callback {
 
+    private final String TAG = "CaptureActivity";
+
     private final int MAX_HEIGHT = 1024;
     private final int MAX_WIDTH = 1024;
     private final int IMAGE_QUALITY = 100;
 
-    ServerSocketThread socketThread;
-    Camera camera;
-    SurfaceView surfaceView;
-    SurfaceHolder surfaceHolder;
+    private ServerSocketThread socketThread;
+    private Camera camera;
+    private SurfaceView surfaceView;
+    private SurfaceHolder surfaceHolder;
 
 
 
@@ -53,8 +56,6 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
         surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
         initCamera();
         initSocket();
-
-
     }
 
     private void initCamera(){
@@ -95,6 +96,7 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     public void sendSocketCommand(int commandType) {
         SocketActions action = SocketActions.fromKey(commandType);
+        if(action == null) return;
         switch (action) {
             case CLOSE_APP:
                 System.exit(1);
@@ -106,15 +108,15 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     public void captureAndSendImage() {
-        //take the picture
         try {
             camera.takePicture(null, null, jpegCallback);
         } catch (Exception e) {
-
+            Log.e(TAG,e.getMessage());
         }
     }
 
     public void refreshCamera() {
+
         if (surfaceHolder.getSurface() == null) {
             return;
         }
@@ -122,12 +124,14 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
         try {
             camera.stopPreview();
         } catch (Exception e) {
+            Log.e(TAG,e.getMessage());
         }
 
         try {
             camera.setPreviewDisplay(surfaceHolder);
             camera.startPreview();
         } catch (Exception e) {
+            Log.e(TAG,e.getMessage());
 
         }
     }
@@ -143,7 +147,7 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
             camera = Camera.open();
             camera.setDisplayOrientation(90);
         } catch (RuntimeException e) {
-            System.err.println(e);
+            Log.e(TAG,e.getMessage());
             return;
         }
         setCameraParameters(camera);
@@ -156,9 +160,7 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
                 }
             });
         } catch (Exception e) {
-            // check for exceptions
-            System.err.println(e);
-            return;
+            Log.e(TAG,e.getMessage());
         }
     }
 

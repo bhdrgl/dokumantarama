@@ -5,6 +5,5 @@ package com.ziraat.dokumantarama;
  */
 
 public interface SocketListener {
-
-    public void sendSocketCommand(int commandType);
+    void sendSocketCommand(int commandType);
 }
