@@ -12,6 +12,7 @@ import android.graphics.PixelFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
+import android.media.ExifInterface;
 import android.nfc.Tag;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -45,9 +46,6 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
     private Camera camera;
     private SurfaceView surfaceView;
     private SurfaceHolder surfaceHolder;
-
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,8 +87,8 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
 
     @Override
     public void onClick(View v) {
-//        captureAndSendImage();
-        Crashlytics.getInstance().crash();
+        captureAndSendImage();
+//        Crashlytics.getInstance().crash();
     }
 
     @Override
@@ -207,33 +205,43 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
         }
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_OK && requestCode == 0) {
-            Bitmap bitmap = (Bitmap) data.getExtras().get("data");//this is your bitmap image and now you can do whatever you want with this
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-            byte[] byteArray = byteArrayOutputStream.toByteArray();
-            String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
-            socketThread.sendPhoto(byteArray);
-        }
-    }
-
     Camera.PictureCallback jpegCallback = new Camera.PictureCallback() {
         public void onPictureTaken(byte[] data, Camera camera) {
             byte[] reduced = resizeImage(data);
             String encoded = Base64.encodeToString(reduced, Base64.DEFAULT);
-            socketThread.sendPhoto(encoded);
+            socketThread.sendPhoto(encoded+"{EOF}");
             refreshCamera();
         }
     };
 
     public byte[] resizeImage(byte[] input) {
         Bitmap original = BitmapFactory.decodeByteArray(input, 0, input.length);
-        Bitmap resized = scaleBitmap(original,MAX_WIDTH,MAX_HEIGHT);
+        Bitmap resized = rotateBitmapIfNeeded(scaleBitmap(original,MAX_WIDTH,MAX_HEIGHT));
         ByteArrayOutputStream blob = new ByteArrayOutputStream();
         resized.compress(Bitmap.CompressFormat.JPEG, IMAGE_QUALITY, blob);
         return blob.toByteArray();
+    }
+
+    public Bitmap rotateBitmapIfNeeded(Bitmap bitmap){
+
+        float rotation = 0.0f;
+        for (int i = 0; i < Camera.getNumberOfCameras(); i++) {
+            Camera.CameraInfo info = new Camera.CameraInfo();
+            Camera.getCameraInfo(i, info);
+            if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
+                rotation = info.orientation;
+            }
+        }
+
+        Bitmap rotatedBitmap = rotateImage(bitmap, rotation);
+
+        return rotatedBitmap;
+    }
+    public static Bitmap rotateImage(Bitmap source, float angle) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(),
+                matrix, true);
     }
 
     private Bitmap scaleBitmap(Bitmap bm,int maxWidth,int maxHeight) {
